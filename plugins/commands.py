@@ -15,13 +15,16 @@ BATCH_FILES = {}
 
 @Client.on_message(filters.command("start") & filters.incoming)
 async def start(client, message):
-   # await message.react(emoji="❤️")
+    await message.react(emoji="🔥")
     if message.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
-        buttons = [[           
-            InlineKeyboardButton('📢 Uᴩᴅᴀᴛᴇꜱ 📢', url=f'https://t.me/{SUPPORT_CHAT}')
-            ],[
-            InlineKeyboardButton('ℹ️ Hᴇʟᴩ ℹ️', url=f"https://t.me/{temp.U_NAME}?start=help")
+        buttons = [[
+            InlineKeyboardButton("𝓙𝓸𝓲𝓷 𝓒𝓱𝓪𝓷𝓷𝓮𝓵 ", url=CH_LINK)
+            ],[     
+            InlineKeyboardButton("𝓓𝓔𝓥𝓢 👨🏻‍💻", callback_data="help"),
+            InlineKeyboardButton("𝓐𝓫𝓸𝓾𝓽 ✨", callback_data="about")
         ]]
+        reply_markup = InlineKeyboardMarkup(buttons)
+
         await message.reply(START_MESSAGE.format(user=message.from_user.mention if message.from_user else message.chat.title, bot=client.mention), reply_markup=InlineKeyboardMarkup(buttons), disable_web_page_preview=True)                    
         await asyncio.sleep(2) 
         if not await db.get_chat(message.chat.id):
@@ -29,54 +32,69 @@ async def start(client, message):
             await client.send_message(LOG_CHANNEL, script.LOG_TEXT_G.format(a=message.chat.title, b=message.chat.id, c=message.chat.username, d=total, f=client.mention, e="Unknown"))       
             await db.add_chat(message.chat.id, message.chat.title, message.chat.username)
         return 
+
     if not await db.is_user_exist(message.from_user.id):
         await db.add_user(message.from_user.id, message.from_user.first_name)
         await client.send_message(LOG_CHANNEL, script.LOG_TEXT_P.format(message.from_user.id, message.from_user.mention, message.from_user.username, temp.U_NAME))
     if len(message.command) != 2:
-        buttons = [[
-            InlineKeyboardButton("𝓙𝓸𝓲𝓷 𝓒𝓱𝓪𝓷𝓷𝓮𝓵 ", url=CH_LINK)
-            ],[      
-            InlineKeyboardButton("𝓓𝓔𝓥𝓢 👨🏻‍💻", callback_data="help"),
-            InlineKeyboardButton("𝓐𝓫𝓸𝓾𝓽 ✨", callback_data="about")
-        ]]
-        m = await message.reply_sticker("CAACAgUAAxkBAAEBvlVk7YKnYxIHVnKW2PUwoibIR2ygGAACBAADwSQxMYnlHW4Ls8gQHgQ") 
-        await asyncio.sleep(2)
-        await message.reply_photo(photo=random.choice(PICS), caption=START_MESSAGE.format(user=message.from_user.mention, bot=client.mention), reply_markup=InlineKeyboardMarkup(buttons), parse_mode=enums.ParseMode.HTML)
-        return await m.delete()
-        
+
+        reply_markup = InlineKeyboardMarkup(buttons)
+        m=await message.reply_sticker("CAACAgUAAxkBAAEKVaxlCWGs1Ri6ti45xliLiUeweCnu4AACBAADwSQxMYnlHW4Ls8gQMAQ") 
+        await asyncio.sleep(1)
+        await m.delete()
+        await message.reply_photo(
+            photo=random.choice(PICS),
+            caption=script.START_TXT.format(message.from_user.mention, temp.U_NAME, temp.B_NAME),
+            reply_markup=reply_markup,
+            parse_mode=enums.ParseMode.HTML
+        )
+        return
+    
     if AUTH_CHANNEL and not await is_subscribed(client, message):
         try:
             invite_link = await client.create_chat_invite_link(int(AUTH_CHANNEL))
         except ChatAdminRequired:
-            logger.error("MAKE SURE BOT IS ADMIN IN FORCESUB CHANNEL")
+            logger.error("Make sure Bot is admin in Forcesub channel")
             return
-        btn = [[InlineKeyboardButton("Jᴏɪɴ Mʏ Cʜᴀɴɴᴇʟ ✨", url=invite_link.invite_link)]]
+        btn = [
+            [
+                InlineKeyboardButton("❆ Jᴏɪɴ Oᴜʀ Cʜᴀɴɴᴇʟ ❆", url=invite_link.invite_link)
+            ],[
+                InlineKeyboardButton('🤔 Why Iam Join🤔', callback_data='sinfo')
+            ]
+        ]
+
         if message.command[1] != "subscribe":
             try:
                 kk, file_id = message.command[1].split("_", 1)
-                pre = 'checksubp' if kk == 'filep' else 'checksub' 
-                btn.append([InlineKeyboardButton("⟳ Tʀʏ Aɢᴀɪɴ", callback_data=f"{pre}#{file_id}")])
+                btn.append([InlineKeyboardButton("↻ Tʀʏ Aɢᴀɪɴ", callback_data=f"checksub#{kk}#{file_id}")])
             except (IndexError, ValueError):
-                btn.append([InlineKeyboardButton("⟳ Tʀʏ Aɢᴀɪɴ", url=f"https://t.me/{temp.U_NAME}?start={message.command[1]}")])
-                
-        try:
-            return await client.send_message(chat_id=message.from_user.id, text=FORCE_SUB_TEXT, reply_markup=InlineKeyboardMarkup(btn), parse_mode=enums.ParseMode.DEFAULT)
-        except Exception as e:
-            print(f"Force Sub Text Error\n{e}")
-            return await client.send_message(chat_id=message.from_user.id, text=script.FORCE_SUB_TEXT, reply_markup=InlineKeyboardMarkup(btn), parse_mode=enums.ParseMode.DEFAULT)
-        
+                btn.append([InlineKeyboardButton("↻ Tʀʏ Aɢᴀɪɴ", url=f"https://t.me/{temp.U_NAME}?start={message.command[1]}")])
+        await client.send_photo(
+            chat_id=message.from_user.id,
+            photo="https://telegra.ph/file/20b4aaaddb8aba646e53c.jpg",
+            caption="**You are not in our channel given below so you don't get the movie file...\n\nIf you want the movie file, click on the '🍿ᴊᴏɪɴ ᴏᴜʀ ʙᴀᴄᴋ-ᴜᴘ ᴄʜᴀɴɴᴇʟ🍿' button below and join our back-up channel, then click on the '🔄 Try Again' button below...\n\nThen you will get the movie files...**",
+            reply_markup=InlineKeyboardMarkup(btn),
+            parse_mode=enums.ParseMode.MARKDOWN
+            )
+        return
     if len(message.command) == 2 and message.command[1] in ["subscribe", "error", "okay", "help"]:
+
         buttons = [[
             InlineKeyboardButton("𝓙𝓸𝓲𝓷 𝓒𝓱𝓪𝓷𝓷𝓮𝓵 ", url=CH_LINK)
             ],[     
             InlineKeyboardButton("𝓓𝓔𝓥𝓢 👨🏻‍💻", callback_data="help"),
             InlineKeyboardButton("𝓐𝓫𝓸𝓾𝓽 ✨", callback_data="about")
         ]]
-        m = await message.reply_sticker("CAACAgUAAxkBAAEBvlVk7YKnYxIHVnKW2PUwoibIR2ygGAACBAADwSQxMYnlHW4Ls8gQHgQ")
-        await asyncio.sleep(2)
-        await message.reply_photo(photo=random.choice(PICS), caption=START_MESSAGE.format(user=message.from_user.mention, bot=client.mention), reply_markup=InlineKeyboardMarkup(buttons), parse_mode=enums.ParseMode.HTML)
-        return await m.delete()
-        
+        reply_markup = InlineKeyboardMarkup(buttons)    
+          
+        await message.reply_photo(
+            photo=random.choice(PICS),
+            caption=START_MESSAGE.format(user=message.from_user.mention, bot=client.mention),
+            reply_markup=reply_markup,
+            parse_mode=enums.ParseMode.HTML
+        )
+        return
     data = message.command[1]
     try:
         pre, file_id = data.split('_', 1)
@@ -84,6 +102,8 @@ async def start(client, message):
         file_id = data
         pre = ""
         
+"
+
     if data.split("-", 1)[0] == "BATCH":
         sts = await message.reply("<b>Please wait...</b>")
         file_id = data.split("-", 1)[1]
