@@ -2,7 +2,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from pyrogram import Client, filters
 
 
-@Client.on_message(filters.photo & filters.private)
+#@Client.on_message(filters.photo & filters.private)
 async def photo_handler(client, message):
     buttons = [[
         InlineKeyboardButton(text="𝖡𝗋𝗂𝗀𝗍𝗁", callback_data="bright"),
